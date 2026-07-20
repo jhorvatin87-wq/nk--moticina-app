@@ -1,0 +1,16 @@
+NK MOTIČINA MANAGER 3.3 — ANDROID PROJEKT
+
+Uključeno:
+- igrači i treninzi
+- testiranja (Bronco, Yo-Yo, sprintovi...)
+- brza evidencija prisutnosti
+- Bronco štoperica sa spremanjem rezultata
+- timer treninga
+- rad bez interneta
+- prilagođeno mobitelu i tabletu
+
+VAŽNO:
+Ovo je kompletan Android projekt, ali ZIP nije gotov APK.
+APK se izrađuje putem GitHub Actions ili Android Studija.
+Workflow za automatsku izradu već je u mapi .github/workflows/build-apk.yml.
+Nakon uspješne izrade preuzima se datoteka app-debug.apk.

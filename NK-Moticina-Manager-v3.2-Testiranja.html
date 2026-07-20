@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b3d2e">
+<title>NK Motičina Manager 3.2</title>
+<style>
+:root{--g:#0b3d2e;--g2:#157253;--bg:#f3f5f4;--card:#fff;--muted:#6b756f;--line:#dde5e0;--red:#b42318;--amber:#8a5a00}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#17211d}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;padding:18px 15px}
+header h1{margin:0;font-size:22px}header p{margin:4px 0 0;font-size:13px;opacity:.88}
+.wrap{max-width:1000px;margin:auto;padding:12px 12px 85px}.nav{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
+.nav button{border:0;background:#fff;padding:10px 4px;border-radius:11px;font-size:10px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.nav button.active{background:var(--g);color:#fff;font-weight:700}.section{display:none}.section.active{display:block}
+.card,.item,.stat{background:#fff;border-radius:14px;padding:13px;box-shadow:0 5px 18px rgba(10,45,30,.07)}.list{display:grid;gap:9px;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stat b{display:block;font-size:24px;color:var(--g)}.stat span,.meta{font-size:12px;color:var(--muted)}
+h2{font-size:18px;margin:9px 0 11px}h3{font-size:15px;margin:0 0 9px}h4{margin:0 0 4px}
+label{display:block;font-size:12px;font-weight:700;margin:8px 0 4px}input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;font-size:14px;background:#fff}
+textarea{min-height:70px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.btn{border:0;border-radius:9px;padding:9px 12px;font-weight:700}.primary{background:var(--g);color:#fff}.light{background:#eaf2ee;color:var(--g)}.danger{background:#fdecea;color:var(--red)}
+.item-top{display:flex;justify-content:space-between;gap:8px}.badge{display:inline-block;padding:4px 7px;border-radius:999px;font-size:11px;font-weight:700;background:#e8f4ee;color:var(--g)}
+.badge.red{background:#fdecea;color:var(--red)}.badge.amber{background:#fff3d8;color:var(--amber)}.empty{text-align:center;padding:22px;color:var(--muted)}
+.player-row{display:grid;grid-template-columns:1.2fr .9fr .7fr;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid #eef2ef}.player-row:last-child{border:0}
+.pitch{background:#207a4d;border-radius:15px;padding:12px;color:#fff;min-height:420px;display:flex;flex-direction:column;justify-content:space-between}
+.line{display:grid;gap:7px;grid-template-columns:repeat(4,1fr)}.line.one{grid-template-columns:1fr}.shirt{background:rgba(255,255,255,.95);color:#143425;border-radius:10px;padding:8px 4px;text-align:center;font-size:11px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:8px;text-align:center;font-size:11px;color:var(--muted)}
+@media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}.nav button{font-size:13px}}
+</style>
+</head>
+<body>
+<header><h1>⚽ NK Motičina Manager 3.2</h1><p>Kompletno vođenje ekipe</p></header>
+<div class="wrap">
+<div class="nav" style="grid-template-columns:repeat(8,1fr)">
+<button class="active" data-tab="home">Početna</button>
+<button data-tab="players">Igrači</button>
+<button data-tab="trainings">Treninzi</button>
+<button data-tab="attendance">Evidencija</button>
+<button data-tab="matches">Utakmice</button>
+<button data-tab="lineup">Sastav</button>
+<button data-tab="tests">Testiranja</button>
+<button data-tab="stats">Statistika</button>
+</div>
+
+<section id="home" class="section active">
+<div class="grid">
+<div class="stat"><b id="sPlayers">0</b><span>Igrača</span></div>
+<div class="stat"><b id="sTrainings">0</b><span>Treninga</span></div>
+<div class="stat"><b id="sMatches">0</b><span>Utakmica</span></div>
+<div class="stat"><b id="sGoals">0</b><span>Golova</span></div>
+</div>
+<h2>Dostupnost ekipe</h2><div id="availabilityOverview" class="list"></div>
+</section>
+
+<section id="players" class="section">
+<div class="card">
+<h3>Dodaj igrača</h3>
+<div class="row"><div><label>Ime i prezime</label><input id="pName"></div><div><label>Pozicija</label><select id="pPos"><option>Vratar</option><option>Branič</option><option>Vezni</option><option>Napadač</option></select></div></div>
+<div class="row"><div><label>Broj dresa</label><input id="pNo" type="number" min="1" max="99"></div><div><label>Dostupnost</label><select id="pAvail"><option>Dostupan</option><option>Upitan</option><option>Ozljeda</option><option>Nedostupan</option></select></div></div>
+<label>Bilješka trenera</label><textarea id="pNote"></textarea>
+<div class="actions"><button class="btn primary" onclick="addPlayer()">Spremi igrača</button></div>
+</div>
+<div id="playersList" class="list"></div>
+</section>
+
+<section id="trainings" class="section">
+<div class="card"><h3>Novi trening</h3>
+<div class="row"><div><label>Datum</label><input id="tDate" type="date"></div><div><label>Vrijeme</label><input id="tTime" type="time" value="18:30"></div></div>
+<label>Plan treninga</label><textarea id="tPlan"></textarea>
+<div class="actions"><button class="btn primary" onclick="addTraining()">Dodaj trening</button></div></div>
+<div id="trainingsList" class="list"></div>
+</section>
+
+
+<section id="attendance" class="section">
+<div class="card">
+<h3>Evidencija treninga</h3>
+<div class="row">
+<div><label>Mjesec</label><input id="attendanceMonth" type="month" onchange="renderAttendance()"></div>
+<div><label>Prikaz</label><select id="attendanceFilter" onchange="renderAttendance()"><option value="all">Svi igrači</option><option value="low">Dolaznost ispod 75%</option><option value="high">Dolaznost 90% i više</option></select></div>
+</div>
+<div class="actions">
+<button class="btn light" onclick="attendanceMonth.value='';renderAttendance()">Cijela sezona</button>
+<button class="btn primary" onclick="printAttendance()">Ispiši evidenciju</button>
+</div>
+</div>
+<div class="grid" style="margin-top:10px">
+<div class="stat"><b id="attTeamRate">0%</b><span>Dolaznost ekipe</span></div>
+<div class="stat"><b id="attBest">-</b><span>Najredovitiji</span></div>
+<div class="stat"><b id="attTopGrade">-</b><span>Najbolji prosjek</span></div>
+<div class="stat"><b id="attUnexcused">0</b><span>Neopravdanih</span></div>
+</div>
+<div class="card" style="margin-top:10px;overflow-x:auto">
+<table>
+<thead><tr><th>Igrač</th><th>Treninga</th><th>Prisutan</th><th>Opravdano</th><th>Neopravdano</th><th>Ozljeda</th><th>Dolaznost</th><th>Prosjek</th></tr></thead>
+<tbody id="attendanceTable"></tbody>
+</table>
+</div>
+</section>
+
+<section id="matches" class="section">
+<div class="card"><h3>Nova utakmica</h3>
+<div class="row"><div><label>Protivnik</label><input id="mOpponent"></div><div><label>Mjesto</label><select id="mPlace"><option>Doma</option><option>Gosti</option></select></div></div>
+<div class="row"><div><label>Datum</label><input id="mDate" type="date"></div><div><label>Vrijeme</label><input id="mTime" type="time" value="17:00"></div></div>
+<div class="row"><div><label>Naši golovi</label><input id="mGF" type="number" min="0"></div><div><label>Protivnik</label><input id="mGA" type="number" min="0"></div></div>
+<div class="actions"><button class="btn primary" onclick="addMatch()">Spremi utakmicu</button></div></div>
+<div id="matchesList" class="list"></div>
+</section>
+
+<section id="lineup" class="section">
+<div class="card"><h3>Sastav za utakmicu</h3>
+<label>Utakmica</label><select id="lineupMatch" onchange="loadLineup()"></select>
+<div class="row"><div><label>Formacija</label><select id="formation" onchange="saveLineup()"><option>4-4-2</option><option>4-3-3</option><option>3-5-2</option><option>4-2-3-1</option></select></div><div><label>Kapetan</label><select id="captain" onchange="saveLineup()"></select></div></div>
+<h3 style="margin-top:12px">Prvih 11</h3><div id="startingChoices"></div>
+<h3 style="margin-top:12px">Pričuve</h3><div id="benchChoices"></div>
+</div>
+<div id="pitchView" class="pitch"></div>
+</section>
+
+
+<section id="tests" class="section">
+<div class="card">
+<h3>Novo kondicijsko testiranje</h3>
+<div class="row"><div><label>Datum</label><input id="testDate" type="date"></div><div><label>Igrač</label><select id="testPlayer"></select></div></div>
+<div class="row"><div><label>Bronco vrijeme</label><input id="testBronco" placeholder="npr. 5:24"></div><div><label>Yo-Yo (metri)</label><input id="testYoyo" type="number" min="0" placeholder="npr. 1600"></div></div>
+<div class="row"><div><label>Sprint 10 m (sek.)</label><input id="testS10" type="number" min="0" step="0.01"></div><div><label>Sprint 30 m (sek.)</label><input id="testS30" type="number" min="0" step="0.01"></div></div>
+<div class="row"><div><label>Skok u dalj (cm)</label><input id="testJump" type="number" min="0"></div><div><label>Plank</label><input id="testPlank" placeholder="npr. 1:45"></div></div>
+<label>Napomena</label><textarea id="testNote" placeholder="Umor, bol, uvjeti testa..."></textarea>
+<div class="actions"><button class="btn primary" onclick="addTest()">Spremi testiranje</button><button class="btn light" onclick="showBroncoRanking()">Bronco rang-lista</button></div>
+</div>
+<div class="grid" style="margin-top:10px">
+<div class="stat"><b id="testCount">0</b><span>Testiranja</span></div>
+<div class="stat"><b id="bestBronco">-</b><span>Najbolji Bronco</span></div>
+<div class="stat"><b id="bestYoyo">-</b><span>Najbolji Yo-Yo</span></div>
+<div class="stat"><b id="bestSprint">-</b><span>Najbrži 30 m</span></div>
+</div>
+<div id="testsList" class="list"></div>
+</section>
+
+<section id="stats" class="section">
+<div class="card"><h3>Statistika igrača</h3>
+<label>Igrač</label><select id="statPlayer" onchange="loadPlayerStats()"></select>
+<div class="row"><div><label>Nastupi</label><input id="stApps" type="number" min="0"></div><div><label>Golovi</label><input id="stGoals" type="number" min="0"></div></div>
+<div class="row"><div><label>Asistencije</label><input id="stAssists" type="number" min="0"></div><div><label>Kartoni</label><input id="stCards" type="number" min="0"></div></div>
+<div class="actions"><button class="btn primary" onclick="savePlayerStats()">Spremi statistiku</button></div></div>
+<div id="statsList" class="list"></div>
+<div class="card" style="margin-top:10px"><h3>Sigurnosna kopija</h3><div class="actions"><button class="btn light" onclick="exportData()">Izvezi podatke</button><label class="btn light" style="display:inline-block;margin:0">Uvezi podatke<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label><button class="btn danger" onclick="resetAll()">Obriši sve</button></div></div>
+</section>
+</div>
+<footer>Radi bez interneta • Podaci se čuvaju na uređaju</footer>
+
+<script>
+const KEY='nk_moticina_manager_v31';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"players":[],"trainings":[],"matches":[],"stats":{},"lineups":{},"tests":[]}');
+['players','trainings','matches'].forEach(k=>db[k]=db[k]||[]);db.stats=db.stats||{};db.lineups=db.lineups||{};db.tests=db.tests||[];
+const save=()=>{localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt=d=>d?new Date(d+'T12:00:00').toLocaleDateString('hr-HR'):'';
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')});
+
+function addPlayer(){if(!pName.value.trim())return alert('Upiši ime igrača.');db.players.push({id:Date.now(),name:pName.value.trim(),pos:pPos.value,no:pNo.value,avail:pAvail.value,note:pNote.value});pName.value='';pNo.value='';pNote.value='';save()}
+function delPlayer(id){if(confirm('Obrisati igrača?')){db.players=db.players.filter(p=>p.id!==id);delete db.stats[id];save()}}
+function setAvail(id,v){db.players.find(p=>p.id===id).avail=v;save()}
+function addTraining(){if(!tDate.value)return alert('Odaberi datum.');let rec={};db.players.forEach(p=>rec[p.id]={status:'Prisutan',grade:'',note:''});db.trainings.push({id:Date.now(),date:tDate.value,time:tTime.value,plan:tPlan.value,records:rec});tPlan.value='';save()}
+function delTraining(id){if(confirm('Obrisati trening?')){db.trainings=db.trainings.filter(t=>t.id!==id);save()}}
+function updateTrain(tid,pid,f,v){let t=db.trainings.find(x=>x.id===tid);t.records[pid]=t.records[pid]||{};t.records[pid][f]=v;localStorage.setItem(KEY,JSON.stringify(db))}
+function addMatch(){if(!mOpponent.value.trim()||!mDate.value)return alert('Upiši protivnika i datum.');db.matches.push({id:Date.now(),opponent:mOpponent.value.trim(),place:mPlace.value,date:mDate.value,time:mTime.value,gf:mGF.value,ga:mGA.value});mOpponent.value='';mGF.value='';mGA.value='';save()}
+function delMatch(id){if(confirm('Obrisati utakmicu?')){db.matches=db.matches.filter(m=>m.id!==id);delete db.lineups[id];save()}}
+
+function renderPlayers(){playersList.innerHTML=db.players.length?db.players.map(p=>`<div class="item"><div class="item-top"><div><h4>${esc(p.name)} <span class="badge">${esc(p.pos)}</span></h4><div class="meta">Broj ${esc(p.no||'-')} • ${esc(p.note||'Bez bilješke')}</div></div><button class="btn danger" onclick="delPlayer(${p.id})">Obriši</button></div><label>Dostupnost</label><select onchange="setAvail(${p.id},this.value)">${['Dostupan','Upitan','Ozljeda','Nedostupan'].map(x=>`<option ${p.avail===x?'selected':''}>${x}</option>`).join('')}</select></div>`).join(''):'<div class="empty">Nema igrača.</div>'}
+function renderTrainings(){trainingsList.innerHTML=db.trainings.length?db.trainings.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`<div class="item"><div class="item-top"><div><h4>${fmt(t.date)} u ${esc(t.time)}</h4><div class="meta">${esc(t.plan||'Bez plana')}</div></div><button class="btn danger" onclick="delTraining(${t.id})">Obriši</button></div>${db.players.map(p=>{let r=t.records?.[p.id]||{};return `<div class="player-row"><b>${esc(p.name)}</b><select onchange="updateTrain(${t.id},${p.id},'status',this.value)">${['Prisutan','Opravdano odsutan','Neopravdano odsutan','Ozljeda'].map(x=>`<option ${r.status===x?'selected':''}>${x}</option>`).join('')}</select><input type="number" min="1" max="10" placeholder="Ocjena" value="${esc(r.grade||'')}" onchange="updateTrain(${t.id},${p.id},'grade',this.value)"></div>`}).join('')}</div>`).join(''):'<div class="empty">Nema treninga.</div>'}
+function renderMatches(){matchesList.innerHTML=db.matches.length?db.matches.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=>`<div class="item"><div class="item-top"><div><h4>NK Motičina – ${esc(m.opponent)}</h4><div class="meta">${fmt(m.date)} u ${esc(m.time)} • ${esc(m.place)}<br>${m.gf!==''&&m.ga!==''?'Rezultat: <b>'+esc(m.gf)+' : '+esc(m.ga)+'</b>':'Rezultat nije upisan'}</div></div><button class="btn danger" onclick="delMatch(${m.id})">Obriši</button></div></div>`).join(''):'<div class="empty">Nema utakmica.</div>'}
+
+function loadLineup(){let mid=lineupMatch.value;if(!mid){pitchView.innerHTML='<div class="empty" style="color:white">Dodaj utakmicu.</div>';return}let l=db.lineups[mid]||{formation:'4-4-2',captain:'',starting:[],bench:[]};formation.value=l.formation;captain.value=l.captain;renderLineupChoices(l);renderPitch(l)}
+function renderLineupChoices(l){startingChoices.innerHTML=db.players.map(p=>`<label class="player-row"><span>${esc(p.name)}</span><span class="meta">${esc(p.pos)}</span><input type="checkbox" ${l.starting.includes(p.id)?'checked':''} onchange="toggleLineup('starting',${p.id},this.checked)"></label>`).join('');benchChoices.innerHTML=db.players.map(p=>`<label class="player-row"><span>${esc(p.name)}</span><span class="meta">${esc(p.pos)}</span><input type="checkbox" ${l.bench.includes(p.id)?'checked':''} onchange="toggleLineup('bench',${p.id},this.checked)"></label>`).join('')}
+function toggleLineup(type,pid,on){let mid=lineupMatch.value;if(!mid)return;let l=db.lineups[mid]||{formation:formation.value,captain:captain.value,starting:[],bench:[]};l[type]=l[type]||[];if(on){if(!l[type].includes(pid))l[type].push(pid)}else l[type]=l[type].filter(x=>x!==pid);if(type==='starting'&&l.starting.length>11){alert('Možeš odabrati najviše 11 igrača.');l.starting=l.starting.filter(x=>x!==pid)}db.lineups[mid]=l;saveLineup(false);loadLineup()}
+function saveLineup(rerender=true){let mid=lineupMatch.value;if(!mid)return;let l=db.lineups[mid]||{starting:[],bench:[]};l.formation=formation.value;l.captain=captain.value;db.lineups[mid]=l;localStorage.setItem(KEY,JSON.stringify(db));if(rerender)renderPitch(l)}
+function renderPitch(l){let names=l.starting.map(id=>db.players.find(p=>p.id===id)).filter(Boolean);let chunks=[];if(l.formation==='4-4-2')chunks=[1,4,4,2];else if(l.formation==='4-3-3')chunks=[1,4,3,3];else if(l.formation==='3-5-2')chunks=[1,3,5,2];else chunks=[1,4,2,3,1];let i=0;pitchView.innerHTML=chunks.map(n=>{let arr=names.slice(i,i+n);i+=n;return `<div class="line ${n===1?'one':''}" style="grid-template-columns:repeat(${n},1fr)">${arr.map(p=>`<div class="shirt">${esc(p.no||'')}<br>${esc(p.name)}</div>`).join('')}</div>`}).join('')+`<div class="meta" style="color:white;margin-top:10px">Pričuve: ${l.bench.map(id=>db.players.find(p=>p.id===id)?.name).filter(Boolean).join(', ')||'-'}</div>`}
+
+
+function attendanceRows(){
+  const month=attendanceMonth?.value||'';
+  const trainings=db.trainings.filter(t=>!month||t.date.startsWith(month));
+  return db.players.map(p=>{
+    let present=0,excused=0,unexcused=0,injury=0,grades=[];
+    trainings.forEach(t=>{
+      const r=t.records?.[p.id]||{};
+      if(r.status==='Prisutan')present++;
+      else if(r.status==='Opravdano odsutan')excused++;
+      else if(r.status==='Neopravdano odsutan')unexcused++;
+      else if(r.status==='Ozljeda')injury++;
+      const g=Number(r.grade);
+      if(g>=1&&g<=10)grades.push(g);
+    });
+    const total=trainings.length;
+    const rate=total?Math.round((present/total)*100):0;
+    const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'-';
+    return {name:p.name,total,present,excused,unexcused,injury,rate,avg};
+  });
+}
+function renderAttendance(){
+  if(!document.getElementById('attendanceTable'))return;
+  let rows=attendanceRows();
+  const filter=attendanceFilter.value;
+  if(filter==='low')rows=rows.filter(r=>r.rate<75);
+  if(filter==='high')rows=rows.filter(r=>r.rate>=90);
+  attendanceTable.innerHTML=rows.length?rows.map(r=>{
+    const cls=r.rate>=90?'badge':r.rate>=75?'badge amber':'badge red';
+    return `<tr><td><b>${esc(r.name)}</b></td><td>${r.total}</td><td>${r.present}</td><td>${r.excused}</td><td>${r.unexcused}</td><td>${r.injury}</td><td><span class="${cls}">${r.rate}%</span></td><td>${r.avg}</td></tr>`;
+  }).join(''):'<tr><td colspan="8" class="empty">Nema podataka za odabrani period.</td></tr>';
+  const all=attendanceRows();
+  const totalTrainings=all.reduce((a,r)=>a+r.total,0);
+  const totalPresent=all.reduce((a,r)=>a+r.present,0);
+  attTeamRate.textContent=totalTrainings?Math.round(totalPresent/totalTrainings*100)+'%':'0%';
+  const best=all.filter(r=>r.total>0).sort((a,b)=>b.rate-a.rate)[0];
+  attBest.textContent=best?best.name:'-';
+  const graded=all.filter(r=>r.avg!=='-').sort((a,b)=>Number(b.avg)-Number(a.avg))[0];
+  attTopGrade.textContent=graded?graded.name+' ('+graded.avg+')':'-';
+  attUnexcused.textContent=all.reduce((a,r)=>a+r.unexcused,0);
+}
+function printAttendance(){
+  const month=attendanceMonth.value;
+  const rows=attendanceRows();
+  const title=month?'Evidencija treninga – '+month:'Evidencija treninga – cijela sezona';
+  const table=rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.total}</td><td>${r.present}</td><td>${r.excused}</td><td>${r.unexcused}</td><td>${r.injury}</td><td>${r.rate}%</td><td>${r.avg}</td></tr>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>${title}</title><style>body{font-family:Arial;padding:24px}h1{font-size:22px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>NK Motičina – ${title}</h1><table><thead><tr><th>Igrač</th><th>Treninga</th><th>Prisutan</th><th>Opravdano</th><th>Neopravdano</th><th>Ozljeda</th><th>Dolaznost</th><th>Prosjek</th></tr></thead><tbody>${table}</tbody></table></body></html>`);
+  w.document.close();w.focus();w.print();
+}
+
+
+function timeToSeconds(v){
+  if(!v)return null;
+  const p=String(v).trim().split(':');
+  if(p.length===2){const m=Number(p[0]),sec=Number(p[1]);return Number.isFinite(m)&&Number.isFinite(sec)?m*60+sec:null}
+  const n=Number(v);return Number.isFinite(n)?n:null;
+}
+function addTest(){
+  if(!testDate.value||!testPlayer.value)return alert('Odaberi datum i igrača.');
+  db.tests.push({id:Date.now(),date:testDate.value,playerId:Number(testPlayer.value),bronco:testBronco.value.trim(),yoyo:+testYoyo.value||'',s10:+testS10.value||'',s30:+testS30.value||'',jump:+testJump.value||'',plank:testPlank.value.trim(),note:testNote.value.trim()});
+  testBronco.value=testYoyo.value=testS10.value=testS30.value=testJump.value=testPlank.value=testNote.value='';save();
+}
+function delTest(id){if(confirm('Obrisati ovo testiranje?')){db.tests=db.tests.filter(t=>t.id!==id);save()}}
+function renderTests(){
+  if(!document.getElementById('testsList'))return;
+  testPlayer.innerHTML='<option value="">Odaberi igrača</option>'+db.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  testCount.textContent=db.tests.length;
+  const broncos=db.tests.map(t=>({...t,sec:timeToSeconds(t.bronco)})).filter(t=>t.sec!==null).sort((a,b)=>a.sec-b.sec);
+  const yoyos=db.tests.filter(t=>Number(t.yoyo)>0).sort((a,b)=>Number(b.yoyo)-Number(a.yoyo));
+  const sprints=db.tests.filter(t=>Number(t.s30)>0).sort((a,b)=>Number(a.s30)-Number(b.s30));
+  const pname=id=>db.players.find(p=>p.id===id)?.name||'Nepoznat igrač';
+  bestBronco.textContent=broncos[0]?pname(broncos[0].playerId)+' '+broncos[0].bronco:'-';
+  bestYoyo.textContent=yoyos[0]?pname(yoyos[0].playerId)+' '+yoyos[0].yoyo+' m':'-';
+  bestSprint.textContent=sprints[0]?pname(sprints[0].playerId)+' '+sprints[0].s30+' s':'-';
+  testsList.innerHTML=db.tests.length?db.tests.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(t=>`<div class="item"><div class="item-top"><div><h4>${esc(pname(t.playerId))} <span class="badge">${fmt(t.date)}</span></h4><div class="meta">Bronco: <b>${esc(t.bronco||'-')}</b> • Yo-Yo: <b>${esc(t.yoyo||'-')} m</b> • 10 m: <b>${esc(t.s10||'-')} s</b> • 30 m: <b>${esc(t.s30||'-')} s</b><br>Skok: <b>${esc(t.jump||'-')} cm</b> • Plank: <b>${esc(t.plank||'-')}</b>${t.note?'<br>'+esc(t.note):''}</div></div><button class="btn danger" onclick="delTest(${t.id})">Obriši</button></div></div>`).join(''):'<div class="empty">Još nema upisanih testiranja.</div>';
+}
+function showBroncoRanking(){
+  const rows=db.tests.map(t=>({...t,sec:timeToSeconds(t.bronco)})).filter(t=>t.sec!==null).sort((a,b)=>a.sec-b.sec);
+  if(!rows.length)return alert('Nema upisanih Bronco rezultata.');
+  const latest={};rows.forEach(r=>{if(!latest[r.playerId]||r.date>latest[r.playerId].date)latest[r.playerId]=r});
+  const rank=Object.values(latest).sort((a,b)=>a.sec-b.sec).map((r,i)=>`${i+1}. ${db.players.find(p=>p.id===r.playerId)?.name||'Igrač'} – ${r.bronco}`).join('\n');
+  alert('BRONCO RANG-LISTA\n\n'+rank);
+}
+
+function loadPlayerStats(){let s=db.stats[statPlayer.value]||{};stApps.value=s.apps||0;stGoals.value=s.goals||0;stAssists.value=s.assists||0;stCards.value=s.cards||0}
+function savePlayerStats(){let id=statPlayer.value;if(!id)return alert('Odaberi igrača.');db.stats[id]={apps:+stApps.value||0,goals:+stGoals.value||0,assists:+stAssists.value||0,cards:+stCards.value||0};save()}
+function renderStats(){statPlayer.innerHTML='<option value="">Odaberi igrača</option>'+db.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');statsList.innerHTML=db.players.length?db.players.map(p=>{let s=db.stats[p.id]||{};return `<div class="item"><h4>${esc(p.name)}</h4><div class="meta">Nastupi <b>${s.apps||0}</b> • Golovi <b>${s.goals||0}</b> • Asistencije <b>${s.assists||0}</b> • Kartoni <b>${s.cards||0}</b></div></div>`}).join(''):'<div class="empty">Nema igrača.</div>'}
+function renderHome(){sPlayers.textContent=db.players.length;sTrainings.textContent=db.trainings.length;sMatches.textContent=db.matches.length;sGoals.textContent=db.matches.reduce((a,m)=>a+(+m.gf||0),0);availabilityOverview.innerHTML=db.players.length?db.players.map(p=>`<div class="item"><div class="item-top"><b>${esc(p.name)}</b><span class="badge ${p.avail==='Ozljeda'||p.avail==='Nedostupan'?'red':p.avail==='Upitan'?'amber':''}">${esc(p.avail)}</span></div></div>`).join(''):'<div class="empty">Nema igrača.</div>'}
+function renderSelectors(){lineupMatch.innerHTML='<option value="">Odaberi utakmicu</option>'+db.matches.map(m=>`<option value="${m.id}">${fmt(m.date)} – ${esc(m.opponent)}</option>`).join('');captain.innerHTML='<option value="">Odaberi kapetana</option>'+db.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+function renderAll(){renderPlayers();renderTrainings();renderAttendance();renderMatches();renderTests();renderStats();renderHome();renderSelectors();loadLineup()}
+function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='NK-Moticina-v3-2-podaci.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Podaci su uvezeni.')}catch{alert('Datoteka nije ispravna.')}};r.readAsText(f)}
+function resetAll(){if(confirm('Sigurno obrisati sve podatke?')){db={players:[],trainings:[],matches:[],stats:{},lineups:{},tests:[]};save()}}
+renderAll();
+</script>
+</body></html>
